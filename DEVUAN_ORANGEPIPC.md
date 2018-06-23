@@ -12,8 +12,99 @@ unfortunately orangepi_pc dtb file is missing. So you must make it yourself. Now
 
 to make it yourself when your hardware is certified to be in mainline kernel follow parazyd instructions, otherwise your constructor instruction. orangepi_pc is in mainline :)
 
+1) mettre en place un environnement de cross compilation 
+ * linaro
+ * arm-sdk
+ * yocto
+ * etc.
 
-## dtbs
+perso j'ai choisi arm-sdk et parazyd a choisi linaro.
+
+2) faire un checkout du depot git linux
+
+La version stable à l'heure actuelle est la 4.17.2
+
+git clone https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.17.2.tar.xz
+
+3) recuperer la conf noyau de devuan
+
+./scripts/extract-ikconfig noyau_devuan > .config
+
+4) choisir les params du noyau
+
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- menuconfig
+
+  sinon directement dans le fichier .config
+
+5) compiler les fichiers dts
+
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- dtbs
+
+6) compiler le noyau et les modules
+
+make -j 24 ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- zImage modules
+
+7) installer les modules vers une destination (output dans l'exemple)
+
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- INSTALL_MOD_PATH=output modules_install
+
+8) transferer sur la partition boot le noyau + le fichier
+
+```sh
+cp arch/arm/boot/dts/sun8i-h3-orangepi-pc.dtb /mnt/boot/dtbs
+cp arch/arm/boot/zImage /mnt/boot
+```
+
+9) transferer les modules sur la partition root
+
+```sh
+cd output/lib
+cp -r modules /mnt/root/lib
+```
+
+10) dump u-boot-sunxi-with-spl.bin
+
+Je ne sais pas si cette étape est vraiment utile, je l'ai faite.
+
+suivre la partie build de la doc u-boot : http://sunxi.org/U-Boot#Build
+
+cela generera un fichier u-boot-sunxi-with-spl.bin.
+
+faire ensuite :
+
+```sh
+dd if=u-boot-sunxi-with-spl.bin of=/dev/sdX bs=1024 seek=8
+```
+
+
+
+
+
+
+## installation OS:
+
+## references :
+
+* https://wiki.archlinux.org/index.php/Orange_Pi
+* http://aperiodic.net/screen/quick_reference
+* https://linux-sunxi.org/UART
+* https://stackoverflow.com/questions/47659997/reverse-engineering-a-zimage
+* https://gitlab.com/ymorin/buildroot/commit/c7a445a58fac3adb5d5da2d3bbce649814646ab9#606c92b5642326d32a9316d575c3ee6505fb7a3d
+* http://www.orangepi.org/Docs/Building.html
+* https://files.devuan.org/devuan_ascii/embedded/README.txt
+* https://linux-sunxi.org/Orange_Pi_PC
+* https://linux-sunxi.org/Mainline_U-Boot#Supported_Devices
+* https://linux-sunxi.org/AR100
+* https://www.denx.de/wiki/DULG/Manual
+* https://www.gnupg.org/howtos/fr/GPGMiniHowto-3.html
+
+## pourquoi devuan
+
+http://lkml.iu.edu//hypermail/linux/kernel/1408.1/02496.html
+
+## ANNEXE
+
+### dtbs
 
 	conversationIRC
 
@@ -40,9 +131,9 @@ to make it yourself when your hardware is certified to be in mainline kernel fol
 
 when you have your dtb file copy it to /boot/dtbs of your sdcard.
 
-## dump u-boot-sunxi-with-spl.bin
+### dump u-boot-sunxi-with-spl.bin
 
-## hdmi display output
+### hdmi display output
 
 seul la console uart fonctionnait pour moi.
 
@@ -68,13 +159,13 @@ et ensuite parazyd, encore merci à lui. A recompilé le noyau avec ces options 
 a présent cela fonctionne.
 
 
-## determiner la version noyau
+### determiner la version noyau
 
 https://stackoverflow.com/questions/47659997/reverse-engineering-a-zimage
 
 L'outils extract-ikconfig dans les sources du noyau permet d'extraire le fichier de config du noyau et ce fichier indique la version en entete.
 
-## partir de zero
+### partir de zero
 
 Il y a des fichers de configuration selon l'architecture dans le rep arch/arm/boot/dts/  du noyau par example pour l'orangepi_pc :
 
@@ -82,7 +173,7 @@ arch/arm/boot/dts/sun8i-h3-orangepi-pc.dtb
 
 plus d'info : https://github.com/umiddelb/armhf/wiki/How-To-compile-a-custom-Linux-kernel-for-your-ARM-device
 
-## communication serie : uart
+### communication serie : uart
 
 rien ne s'affiche à l'ecran passer en mode debug en restant appuyé sur le bouton com au moment de l'allumage.
 
@@ -94,25 +185,4 @@ Il n'y a que 3 pin : ground,rx,tx. Le rx de votre module va sur le tx de la cart
 Ensuite screen /dev/ttyUSBX 115200
 
 X correspond au numero de port alloué dynamiquement.
-
-## installation OS:
-
-## references :
-
-* https://wiki.archlinux.org/index.php/Orange_Pi
-* http://aperiodic.net/screen/quick_reference
-* https://linux-sunxi.org/UART
-* https://stackoverflow.com/questions/47659997/reverse-engineering-a-zimage
-* https://gitlab.com/ymorin/buildroot/commit/c7a445a58fac3adb5d5da2d3bbce649814646ab9#606c92b5642326d32a9316d575c3ee6505fb7a3d
-* http://www.orangepi.org/Docs/Building.html
-* https://files.devuan.org/devuan_ascii/embedded/README.txt
-* https://linux-sunxi.org/Orange_Pi_PC
-* https://linux-sunxi.org/Mainline_U-Boot#Supported_Devices
-* https://linux-sunxi.org/AR100
-* https://www.denx.de/wiki/DULG/Manual
-* https://www.gnupg.org/howtos/fr/GPGMiniHowto-3.html
-
-## pourquoi devuan
-
-http://lkml.iu.edu//hypermail/linux/kernel/1408.1/02496.html
 
