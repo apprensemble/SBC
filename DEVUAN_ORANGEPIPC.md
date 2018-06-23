@@ -36,13 +36,13 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- menuconfig
 
   sinon directement dans le fichier .config
 
-5) compiler les fichiers dts
+~~5) compiler les fichiers dts~~
 
-make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- dtbs
+~~make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- dtbs~~
 
 6) compiler le noyau et les modules
 
-make -j 24 ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- zImage modules
+make -j 24 ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- dtbs zImage modules
 
 7) installer les modules vers une destination (output dans l'exemple)
 
@@ -110,6 +110,14 @@ Il est possible que l'on vous parle d'une signature ext4 à supprimer vous repon
 reboot
 
 au reboot resize2fs /dev/mmcblk0p2
+
+
+### installation couche de virtualisation
+
+* package de base
+dnsmaq iproute 
+* qemu
+* virt-manager
 
 
 
