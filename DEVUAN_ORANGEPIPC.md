@@ -40,7 +40,7 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- menuconfig
 
 ~~make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- dtbs~~
 
-6) compiler le noyau et les modules
+6) compiler le noyau, les fichiers dtbs et les modules
 
 make -j 24 ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- dtbs zImage modules
 
