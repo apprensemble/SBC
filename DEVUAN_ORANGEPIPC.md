@@ -76,12 +76,43 @@ faire ensuite :
 dd if=u-boot-sunxi-with-spl.bin of=/dev/sdX bs=1024 seek=8
 ```
 
+11) on boot
 
 
 
+## configuration OS :
+
+à présent on passe aux choses serieuses.
+
+### agrandir le fs
+
+Au demarage on se retrouve avec une partition boot de 120Mo et une root de 2Go
+quelque soit la taille de la carte SD.
+
+pour agrandir la carte rien de plus simple :
+
+```sh
+fdisk /dev/mmcblk0
+p
+d
+2
+n
+p
+2
+[suivant]
+[suivant]
+[suivant]
+wq
+```
+Il est possible que l'on vous parle d'une signature ext4 à supprimer vous repondez non.
 
 
-## installation OS:
+reboot
+
+au reboot resize2fs /dev/mmcblk0p2
+
+
+
 
 ## references :
 
