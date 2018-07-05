@@ -55,6 +55,8 @@ cp arch/arm/boot/dts/sun8i-h3-orangepi-pc.dtb /mnt/boot/dtbs
 cp arch/arm/boot/zImage /mnt/boot
 ```
 
+
+
 9) transferer les modules sur la partition root
 
 ```sh
@@ -118,8 +120,52 @@ au reboot resize2fs /dev/mmcblk0p2
 dnsmaq iproute 
 * qemu
 * virt-manager
+* u-boot(comme on veut sur le serveur de preparation ou sur la board)
+* flex
+* telnet
+* swig
+
+  Coté serveur de prepration compiler un noyau guest avec la conf vexpress recuperer les même fichiers que pour le hosts sauf le dtb : vexpress-v2p-ca15_a7.dtb. Il semble y avoir moins d'overhead avec celui-ci(moins de 20% contre + de 30% avec le a9).
+
+demarrer un guest :
+
+```shell
+qemu-system-arm -M vexpress-a15 -m 512 -smp cpus=4 -nographic -no-reboot -kernel zImage -dtb vexpress-v2p-ca15_a7.dtb -initrd rootfs.img.gz -append "root=/dev/ram rdinit=/sbin/init console=ttyAMA0"
+```
+
+C'était difficile, je n'aurais pas reussi sans ce tuto :
+
+* https://balau82.wordpress.com/2010/03/27/busybox-for-arm-on-qemu/
+* https://balau82.wordpress.com/2010/04/12/booting-linux-with-u-boot-on-qemu-arm/
+
+Merci Mr Balau!
+
+    par contre l'overhead me semblait trop important et par hasard à force d'essayer different param de compilation c'est tombé en marche, ci dessous la commande kvm, au dessus c'était la commande qemu. Il faut savoir que les instruction du cortexA15 et cortexA7 sont compatibles mais il y a de l'overhead(15,20%), ci dessous il n'y a presque pas d'overhead(1 à 3%) :
+
+```
+qemu-system-arm cirros-0.4.0-arm-disk.img -enable-kvm -M virt -cpu host -kernel zImage -initrd cirros-0.4.0-arm-initramfs -monitor telnet:127.0.0.1:1234,server,nowait -nographic
+```
+
+Pour y arrivé j'ai laissé les param noyau d'origine du vexpressA9 sans options. tt ça pour ça. franchement...
+
+04 juillet : j'ai le reseau!
+
+```
+sudo -E QEMU_AUDIO_DRV=wav -E QEMU_WAV_PATH=$HOME/tune.wav /usr/local/bin/qemu-system-arm -enable-kvm -M virt -cpu host -kernel zImage -initrd rootfs.img.gz -monitor telnet:127.0.0.1:1234,server,nowait -nographic -append "root=/dev/ram rdinit=/sbin/init" -drive if=none,file=../cirros/cirros-0.4.0-arm-disk.img,id=hd0 -device virtio-blk-device,drive=hd0 -netdev type=tap,id=net0 -device virtio-net-device,netdev=net0 
+```
+
+malheureusement pas de son...d'où les qq options hasardeuses
+
+```
+sudo -E QEMU_AUDIO_DRV=wav -E QEMU_WAV_PATH=$HOME/tune.wav /usr/local/bin/qemu-system-arm -enable-kvm -M virt -cpu host -kernel ../../zImage -nographic -monitor telnet:127.0.0.1:1234,server,nowait  -drive if=scsi,file=./../../devuan_ascii_2.0.0_armhf_sunxi.img,id=hd0 -device virtio-blk-device,drive=hd0 -netdev type=tap,id=net0 -device virtio-net-device,netdev=net0 -append "root=/dev/vda2 rdinit=/sbin/init console=ttyAMA0" -soundhw ac97
+```
+
+toujours pas de son mais buildroot OK. J'ai un systeme fonctionnel sans son.
 
 
+### couche de gestion graphique
+
+Candidats : x2go, Xserver sans ssh
 
 
 ## references :
@@ -224,4 +270,14 @@ Il n'y a que 3 pin : ground,rx,tx. Le rx de votre module va sur le tx de la cart
 Ensuite screen /dev/ttyUSBX 115200
 
 X correspond au numero de port alloué dynamiquement.
+
+### mettre à jour une image
+
+POur monter l'image : https://www.linuxquestions.org/questions/linux-general-1/how-to-mount-img-file-882386/
+
+```fdisk -l /dev/sdX```
+
+On repere la taille des blocks et le debut de la partition. Puis on monte en mode loop grace à ces infos :
+
+```mount -o loop,offset=$((block*start)) image_file.img /mnt/point_de_montage```
 
