@@ -162,6 +162,12 @@ sudo -E QEMU_AUDIO_DRV=wav -E QEMU_WAV_PATH=$HOME/tune.wav /usr/local/bin/qemu-s
 
 toujours pas de son mais buildroot OK. J'ai un systeme fonctionnel sans son.
 
+```
+ sudo -E QEMU_AUDIO_DRV=wav -E QEMU_WAV_PATH=$HOME/tune.wav /usr/local/bin/qemu-system-arm -enable-kvm -M virt -cpu host -smp 4 -kernel zImage -nographic -monitor telnet:127.0.0.1:1234,server,nowait  -drive if=scsi,file=devuan_ascii_2.0.0_armhf_sunxi.img,id=hd0 -device virtio-blk-device,drive=hd0 -netdev type=tap,id=net0 -device virtio-net-device,netdev=net0 -append "root=/dev/vda2 rdinit=/sbin/init console=ttyAMA0" -soundhw hda
+```
+
+toujours pas de son mais PCI ok et carte son visible.
+
 
 ### couche de gestion graphique
 
