@@ -1,54 +1,67 @@
 # Orange PI PC
 
-## download devuan for orangePIPC
+## pourquoi devuan
+
+http://lkml.iu.edu//hypermail/linux/kernel/1408.1/02496.html
+
+## install via devuan sarm-sdk script is the easiest way
+
+https://git.devuan.org/sdk/arm-sdk.git
+
+## manual install is not so hard 
+
+### download devuan for orangePIPC
 
 https://files.devuan.org/devuan_ascii/embedded/
 
-more exactly : https://files.devuan.org/devuan_ascii/embedded/devuan_ascii_2.0.0_armhf_sunxi.img.xz
+plus precisement : https://files.devuan.org/devuan_ascii/embedded/devuan_ascii_2.0.0_armhf_sunxi.img.xz
 
-follow readme instructions : https://files.devuan.org/devuan_ascii/embedded/README.txt
+### preparer l'installation
 
-unfortunately orangepi_pc dtb file is missing. So you must make it yourself. Now you can download this one thanks to parazyd :)
+suivre les instructions : https://files.devuan.org/devuan_ascii/embedded/README.txt
 
-to make it yourself when your hardware is certified to be in mainline kernel follow parazyd instructions, otherwise your constructor instruction. orangepi_pc is in mainline :)
+Les fichiers device tree binaire(dtb) sont manquant pour l'orange pi pc. Il est possible de les faires facilement à partir du fichier dts fournit avec le noyaux mainline ou dans les sources de u-boot.
 
-1) mettre en place un environnement de cross compilation 
- * linaro
- * arm-sdk
- * yocto
+Parazyd doit mettre les dtb orange_pi_pc en ligne bientôt.
+
+### environnement de cross compilation
+
+ * [linaro](https://www.linaro.org/latest/downloads/)
+ * [arm-sdk](https://github.com/dyne/arm-sdk)
+ * [yocto](https://www.yoctoproject.org/)
  * etc.
 
-perso j'ai choisi arm-sdk et parazyd a choisi linaro.
+perso j'ai choisi arm-sdk
 
-2) faire un checkout du depot git linux
+### faire un checkout du depot git linux
 
 La version stable à l'heure actuelle est la 4.17.2
 
 git clone https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.17.2.tar.xz
 
-3) recuperer la conf noyau de devuan
+### recuperer la conf noyau de devuan
 
 ./scripts/extract-ikconfig noyau_devuan > .config
 
-4) choisir les params du noyau
+### choisir les params du noyau
 
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- menuconfig
 
   sinon directement dans le fichier .config
 
-~~5) compiler les fichiers dts~~
+###~~ compiler les fichiers dts~~
 
 ~~make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- dtbs~~
 
-6) compiler le noyau, les fichiers dtbs et les modules
+### compiler le noyau, les fichiers dtbs et les modules
 
 make -j 24 ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- dtbs zImage modules
 
-7) installer les modules vers une destination (output dans l'exemple)
+### installer les modules vers une destination (output dans l'exemple)
 
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- INSTALL_MOD_PATH=output modules_install
 
-8) transferer sur la partition boot le noyau + le fichier
+### transferer sur la partition boot le noyau + le fichier
 
 ```sh
 cp arch/arm/boot/dts/sun8i-h3-orangepi-pc.dtb /mnt/boot/dtbs
@@ -57,14 +70,14 @@ cp arch/arm/boot/zImage /mnt/boot
 
 
 
-9) transferer les modules sur la partition root
+### transferer les modules sur la partition root
 
 ```sh
 cd output/lib
 cp -r modules /mnt/root/lib
 ```
 
-10) dump u-boot-sunxi-with-spl.bin
+### dump u-boot-sunxi-with-spl.bin
 
 Je ne sais pas si cette étape est vraiment utile, je l'ai faite.
 
@@ -78,13 +91,11 @@ faire ensuite :
 dd if=u-boot-sunxi-with-spl.bin of=/dev/sdX bs=1024 seek=8
 ```
 
-11) on boot
+### on boot
 
 
 
 ## configuration OS :
-
-à présent on passe aux choses serieuses.
 
 ### agrandir le fs
 
@@ -189,9 +200,6 @@ Candidats : x2go, Xserver sans ssh
 * https://www.denx.de/wiki/DULG/Manual
 * https://www.gnupg.org/howtos/fr/GPGMiniHowto-3.html
 
-## pourquoi devuan
-
-http://lkml.iu.edu//hypermail/linux/kernel/1408.1/02496.html
 
 ## ANNEXE
 
