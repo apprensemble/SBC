@@ -34,4 +34,4 @@ puis make
 
 construire le noyau???
 
-Je suis tenté d'essayer de juste booter u-boot :p
+Je suis tenté d'essayer de juste booter u-boot :p :)
